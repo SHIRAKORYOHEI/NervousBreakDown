@@ -1,15 +1,8 @@
 using UnityEngine;
 
-public enum CardState
-{
-    FaceUp,
-    FaceDown,
-    Matched
-}
-
 public class Card : MonoBehaviour
 {
-    private int value;
+    public int value;
     void Start()
     {
         
@@ -22,6 +15,6 @@ public class Card : MonoBehaviour
 
     public void OnCardClicked()
     {
-        
+        GameManager.Instance.SelectCard(this);
     }
 }

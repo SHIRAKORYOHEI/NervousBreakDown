@@ -7,10 +7,19 @@ public class BoardManager : MonoBehaviour
     [SerializeField] private GameObject cardPrefab;
     public Transform board;
     List<Card> cards = new List<Card>();
+    List<int> cardsValue = new List<int>();
     
     void Start()
     {
-        CardInstantiate(); 
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 1; j < 11; j++)
+            {
+                cardsValue.Add(j);
+            }
+        }
+        Shuffle();
+        CardInstantiate();
     }
 
     void Update()
@@ -20,23 +29,24 @@ public class BoardManager : MonoBehaviour
     
     void CardInstantiate()
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < cardsValue.Count; i++)
         {
-            for (int j = 1; j < 11; j++)
-            {
-                GameObject card = Instantiate(cardPrefab, board);
-                card.transform.SetAsLastSibling();
-            }
+            Card card = Instantiate(cardPrefab, board).GetComponent<Card>();
+            card.value = cardsValue[i];
+            cards.Add(card);
         }
     }
     
     void Shuffle()
     {
-        
-    }
+        int n = cardsValue.Count;
 
-    void OnCardClicked()
-    {
-        
+        while (n > 1)
+        {
+            n--;
+            
+            int k = Random.Range(0, n + 1);
+            (cardsValue[k], cardsValue[n]) = (cardsValue[n], cardsValue[k]);
+        }
     }
 }

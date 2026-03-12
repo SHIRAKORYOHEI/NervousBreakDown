@@ -664,6 +664,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1718563705}
   - component: {fileID: 1718563706}
+  - component: {fileID: 1718563707}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -700,6 +701,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardPrefab: {fileID: 9076600458103275270, guid: 87d63caef5615de49b540bc38a567f43, type: 3}
   board: {fileID: 595841761}
+--- !u!114 &1718563707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1718563704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9899004309dda049b4ed42304219953, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

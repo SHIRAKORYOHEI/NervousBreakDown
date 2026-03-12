@@ -19,4 +19,9 @@ public class Card : MonoBehaviour
     {
         
     }
+
+    public void OnCardClicked()
+    {
+        
+    }
 }

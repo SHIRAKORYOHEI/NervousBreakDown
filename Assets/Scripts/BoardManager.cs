@@ -6,10 +6,11 @@ public class BoardManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardPrefab;
     public Transform board;
+    List<Card> cards = new List<Card>();
     
     void Start()
     {
-        
+        CardInstantiate(); 
     }
 
     void Update()
@@ -21,11 +22,21 @@ public class BoardManager : MonoBehaviour
     {
         for (int i = 0; i < 4; i++)
         {
-            for (int j = 0; j < 10; j++)
+            for (int j = 1; j < 11; j++)
             {
                 GameObject card = Instantiate(cardPrefab, board);
                 card.transform.SetAsLastSibling();
             }
         }
+    }
+    
+    void Shuffle()
+    {
+        
+    }
+
+    void OnCardClicked()
+    {
+        
     }
 }

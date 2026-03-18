@@ -6,47 +6,28 @@ public class BoardManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardPrefab;
     public Transform board;
-    List<Card> cards = new List<Card>();
-    List<int> cardsValue = new List<int>();
+    Sprite[] cardSprites;
     
     void Start()
     {
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 1; j < 11; j++)
-            {
-                cardsValue.Add(j);
-            }
-        }
-        Shuffle();
-        CardInstantiate();
-    }
-
-    void Update()
-    {
+        cardSprites = Resources.LoadAll<Sprite>("Cards");
         
-    }
-    
-    void CardInstantiate()
-    {
-        for (int i = 0; i < cardsValue.Count; i++)
-        {
-            Card card = Instantiate(cardPrefab, board).GetComponent<Card>();
-            card.value = cardsValue[i];
-            cards.Add(card);
-        }
-    }
-    
-    void Shuffle()
-    {
-        int n = cardsValue.Count;
+        List<int> ids = new List<int>();
+        for (int i = 0; i < 40; i++) ids.Add(i);
 
-        while (n > 1)
+        // Fisher-Yates shuffle
+        for (int i = ids.Count - 1; i > 0; i--)
         {
-            n--;
-            
-            int k = Random.Range(0, n + 1);
-            (cardsValue[k], cardsValue[n]) = (cardsValue[n], cardsValue[k]);
+            int r = Random.Range(0, i + 1);
+            (ids[i], ids[r]) = (ids[r], ids[i]);
+        }
+
+        // Instantiate cards
+        foreach (int id in ids)
+        {
+            Card card = Instantiate(cardPrefab, board, false).GetComponent<Card>();
+            card.id = id;
+            card.frontSprite = cardSprites[id];
         }
     }
 }

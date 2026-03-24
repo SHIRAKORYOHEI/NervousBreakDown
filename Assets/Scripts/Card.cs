@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,13 +22,28 @@ public class Card : MonoBehaviour
     
     public void OnCardClicked()
     {
-        Flip();
         GameManager.Instance.SelectCard(this);
     }
 
-    void Flip()
+    private bool isFlipping = false;
+    public void Flip()
     {
-        isFaceUp = !isFaceUp;
-        image.sprite = isFaceUp ? frontSprite : backSprite;
+        if (isFlipping) return;
+        isFlipping = true;
+
+        transform.DOKill();
+        
+        transform.DORotate(new Vector3(0, 90, 0), 0.2f).OnComplete(() =>
+        {
+            isFaceUp = !isFaceUp;
+            image.sprite = isFaceUp ? frontSprite : backSprite;
+
+            transform.eulerAngles = new Vector3(0, -90, 0);
+
+            transform.DORotate(Vector3.zero, 0.2f).OnComplete(() =>
+            {
+                isFlipping = false;
+            });
+        });
     }
 }

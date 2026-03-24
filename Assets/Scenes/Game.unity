@@ -388,6 +388,7 @@ GameObject:
   - component: {fileID: 595841763}
   - component: {fileID: 595841762}
   - component: {fileID: 595841764}
+  - component: {fileID: 595841765}
   m_Layer: 5
   m_Name: Board
   m_TagString: Untagged
@@ -476,6 +477,18 @@ MonoBehaviour:
   m_Spacing: {x: 100, y: 30}
   m_Constraint: 1
   m_ConstraintCount: 8
+--- !u!225 &595841765
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 595841760}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &807955812
 GameObject:
   m_ObjectHideFlags: 0
@@ -713,6 +726,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9899004309dda049b4ed42304219953, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boardCanvasGroup: {fileID: 595841765}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

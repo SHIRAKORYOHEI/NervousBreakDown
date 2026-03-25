@@ -23,11 +23,15 @@ public class BoardManager : MonoBehaviour
         }
 
         // Instantiate cards
+        List<Card> cards = new List<Card>();
         foreach (int id in ids)
         {
             Card card = Instantiate(cardPrefab, board, false).GetComponent<Card>();
             card.id = id;
             card.frontSprite = cardSprites[id];
+            cards.Add(card); // ← 追加
         }
+
+        GameManager.Instance.RegisterCards(cards); // ← 追加
     }
 }

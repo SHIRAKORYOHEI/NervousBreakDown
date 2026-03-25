@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class Card : MonoBehaviour
 {
-    bool isFaceUp;
+    public bool isFaceUp;
     public int id;
     public int suit => id / 10;
     public int number => id % 10 + 1;

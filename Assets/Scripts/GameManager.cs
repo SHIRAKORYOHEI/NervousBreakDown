@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     [SerializeField] private CanvasGroup boardCanvasGroup;
+    UIManager uiManager;
     
     //難易度ごとにAIが記憶できる枚数
     public enum Difficulty { Easy, Normal, Hard }
@@ -22,12 +23,12 @@ public class GameManager : MonoBehaviour
         _ => 3
     };
     
-    const int MaxFlippedCards = 3;
     List<Card> selectedCards = new();
     List<Card> keptCards = new();
     
-    int playerHP = 200;
-    int enemyHP = 200;
+    int playerHP;
+    int enemyHP;
+    const int MaxHP = 50;
     
     bool isPlayerTurn = true;
     Dictionary<int, Card> aiMemory = new();
@@ -38,17 +39,29 @@ public class GameManager : MonoBehaviour
     private const int InitialDraw = 3;
     private int remainingDraw = 0;
     bool isLocked     = false;
-    const int MaxKeptCards = 1;
+    bool hasMatchedThisTurn;
     
     void Awake() => Instance = this;
+    void Start()
+    {
+        playerHP = MaxHP;
+        enemyHP = MaxHP;
+        UIUpdate(InitialDraw, ResultType.Waiting, isPlayerTurn);
+        UIManager.Instance.UpdateHP(playerHP, enemyHP, MaxHP);
+        boardCanvasGroup.blocksRaycasts = false;
+    }
+    
+    public void StartGame()
+    {
+        boardCanvasGroup.blocksRaycasts = true;
+        StartPlayerTurn();
+    }
 
     public void RegisterCards(List<Card> cards)
     {
         allCards = new List<Card>(cards);
         StartPlayerTurn();
     }
-    
-    void Start() => DOVirtual.DelayedCall(0.5f, () => Debug.Log($"allCards起動時: {allCards.Count}"));
     
     public void SelectCard(Card card)
     {
@@ -71,10 +84,13 @@ public class GameManager : MonoBehaviour
     {
         selectedCards.Add(card);
         card.Flip();
+        SEManager.Instance.PlayFlip();
         RememberCard(card);
         remainingDraw--;
+        UIManager.Instance.UpdateDraw(remainingDraw);
     }
 
+    int totalDamage = 0;
     void ResolveTurn()
     {
         boardCanvasGroup.blocksRaycasts = false;
@@ -85,49 +101,63 @@ public class GameManager : MonoBehaviour
         
         var groups = cards.GroupBy(c => c.number).ToList();
         int sum = cards.Sum(c => c.number);
-        int damage;
+        int damage = 0;
         int addDraw = 0;
         int maxSame = groups.Any() ? groups.Max(g => g.Count()) : 0;
+        int comboCount = 0;
         
-        if (maxSame >= 3)
+        if (maxSame >= 3) // スリーカード：2枚削除、+3ドロー
         {
-            // スリーカード：2枚削除、+3ドロー
+            comboCount++;
+            SEManager.Instance.PlayCombo(comboCount - 1);
+
+            hasMatchedThisTurn = true;
             damage = sum * 5;
             addDraw = 3;
             ApplyMatch(cards, groups.First(g => g.Count() >= 3).Take(2).ToList());
-            Debug.Log($"スリーカード {damage}");
+            UIManager.Instance.UpdateMatch(ResultType.ThreeCard, isPlayerTurn);
         }
-        else if (maxSame == 2)
+        else if (maxSame == 2) // ワンペア：2枚削除、+1ドロー、二回目以降+2ドロー
         {
-            // ワンペア：2枚削除、+1ドロー、二回目以降+2ドロー
+            comboCount++;
+            SEManager.Instance.PlayCombo(comboCount - 1);
+
+            hasMatchedThisTurn = true;
             damage = sum * 3;
             addDraw = firstPair ? 1 : 2;
             firstPair = false;
             ApplyMatch(cards, groups.First(g => g.Count() >= 2).Take(2).ToList());
-            Debug.Log($"ワンペア {damage}");
+            UIManager.Instance.UpdateMatch(ResultType.OnePair, isPlayerTurn);
         }
         else
         {
             // 役無し
             damage = sum / 2;
             foreach (var c in cards) c.Flip();
-            Debug.Log($"役無し {damage}");
         }
-        ApplyDamage(damage);
-        
-        if( CheckGameOver()) return;
+        totalDamage += damage;
 
         if (addDraw > 0)
         {
             remainingDraw = addDraw;
             isLocked = false;
+            UIManager.Instance.UpdateDraw(remainingDraw);
             
             if (!isPlayerTurn) StartCoroutine(AIContinue());
             else boardCanvasGroup.blocksRaycasts = true;
         }
         else
         {
+            ApplyDamage(totalDamage);
+            totalDamage = 0;
+            
+            if( CheckGameOver()) return;
+
+            if (!hasMatchedThisTurn)
+                UIManager.Instance.UpdateMatch(ResultType.NoMatch, isPlayerTurn);
+            
             EndTurn();
+            comboCount = 0;
         }
     }
 
@@ -155,7 +185,10 @@ public class GameManager : MonoBehaviour
         isLocked      = false;
         remainingDraw = InitialDraw;
         firstPair     = true;
+        hasMatchedThisTurn = false;
         boardCanvasGroup.blocksRaycasts = true;
+        UIUpdate(remainingDraw, ResultType.Waiting, isPlayerTurn);
+        UIManager.Instance.UpdateState(isLocked);
     }
     
     void EndTurn()
@@ -164,14 +197,13 @@ public class GameManager : MonoBehaviour
         selectedCards.Clear();
         keptCards.Clear();
         isPlayerTurn = !isPlayerTurn;
-        isLocked     = false;
  
         if (isPlayerTurn)
             StartPlayerTurn();
         else
         {
             boardCanvasGroup.blocksRaycasts = false;
-            DOVirtual.DelayedCall(1f, StartAITurn);
+            DOVirtual.DelayedCall(1.5f, StartAITurn);
         }
     }
     
@@ -179,16 +211,20 @@ public class GameManager : MonoBehaviour
 
     void StartAITurn()
     {
+        isLocked      = true;
         remainingDraw = InitialDraw;
         firstPair     = true;
+        hasMatchedThisTurn = false;
         StartCoroutine(AITurn());
         selectedCards.Clear();
         keptCards.Clear();
+        UIUpdate(remainingDraw, ResultType.Waiting, isPlayerTurn);
+        UIManager.Instance.UpdateState(isLocked);
     }
     
     IEnumerator AIContinue()
     {
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(1.5f);
         StartCoroutine(AITurn());
     }
     
@@ -231,11 +267,11 @@ public class GameManager : MonoBehaviour
  
         foreach (var c in chosen)
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(1f);
             FlipAndSelect(c);
         }
  
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(1.5f);
         ResolveTurn();
     }
 
@@ -260,21 +296,42 @@ public class GameManager : MonoBehaviour
     void ApplyDamage(int damage)
     {
         if (isPlayerTurn)
-        {
             enemyHP = Mathf.Max(enemyHP - damage, 0);
-            Debug.Log($"敵HP: {enemyHP}");
-        }
         else
-        {
             playerHP = Mathf.Max(playerHP - damage, 0);
-            Debug.Log($"プレイヤーHP: {playerHP}");
-        }
+        
+        SEManager.Instance.PlayAttack();
+        UIManager.Instance.UpdateHP(playerHP, enemyHP, MaxHP);
+        UIManager.Instance.PlayDamageEffect(isPlayerTurn);
     }
 
     bool CheckGameOver()
     {
-        if (playerHP <= 0) { Debug.Log("敗北"); /* TODO: UI */ return true; }
-        if (enemyHP  <= 0) { Debug.Log("勝利"); /* TODO: UI */ return true; }
+        if (playerHP <= 0) // プレイヤー敗北
+        {
+            UIManager.Instance.ShowResult(false); 
+            SEManager.Instance.PlayerWin(false);
+            return true;
+        }
+
+        if (enemyHP <= 0) // プレイヤー勝利
+        {
+            UIManager.Instance.ShowResult(true);
+            SEManager.Instance.PlayerWin(true);
+            return true;
+        }
         return false;
+    }
+
+    public void SetDifficulty(Difficulty diff)
+    {
+        difficulty = diff;
+    }
+    
+    void UIUpdate(int draw, ResultType result, bool isPlayer)
+    { 
+        UIManager.Instance.UpdateDraw(draw);
+        UIManager.Instance.UpdateMatch(result, isPlayer);
+        UIManager.Instance.UpdateTurn(isPlayer);
     }
 }

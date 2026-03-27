@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
     
     int playerHP;
     int enemyHP;
-    const int MaxHP = 50;
+    const int MaxHP = 200;
     
     bool isPlayerTurn = true;
     Dictionary<int, Card> aiMemory = new();

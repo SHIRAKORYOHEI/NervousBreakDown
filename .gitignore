@@ -102,3 +102,7 @@ InitTestScene*.unity*
 Assets/Plugins/
 Assets/Resources/
 *.meta
+
+# TextMeshProキャッシュ／自動生成
+Library/TextMesh Pro/
+Library/TMP/

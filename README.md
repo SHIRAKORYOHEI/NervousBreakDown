@@ -15,3 +15,7 @@
 
 ## プレイ
 https://shirakoryohei.github.io/NervousBreakDown/
+
+
+## 注意
+フルスクリーン以外だとUIが少しズレてます

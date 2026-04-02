@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
     {
         Difficulty.Easy => 1,
         Difficulty.Normal => 3,
-        Difficulty.Hard => 8,
+        Difficulty.Hard => 5,
         _ => 3
     };
     
